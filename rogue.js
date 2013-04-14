@@ -160,7 +160,7 @@ function move(object, x, y) {
 			}
 		}
 	}
-		
+	
 	//need to loop through all monsters
 	for (var i = 0; i < monsters.length; i++) {
 		if (object == monsters[i]) {
@@ -186,10 +186,10 @@ function move(object, x, y) {
 			}
 		}
 	}
-
+	
 	object.x = newX; // set new position
 	object.y = newY;
-		
+	
 	if (object == player) {
 		fow();
 		camera.offsetX -= x;
@@ -215,13 +215,6 @@ function fow() {
 		} 
 	} 
 	
-	// for (var i = player.x - fowRange; i < player.x + fowRange+1; i++) { 
-		// for (var j = player.y - fowRange; j < player.y + fowRange+1; j++) { 
-			// var fog = fowMap[j][j];
-			// fowMap[j][i] = 2; 
-		// } 
-	// } 
-	
 	for (var i = (player.x - fowRange); i < (player.x + fowRange + 1); i++) { 
 		for (var j = (player.y - fowRange); j < (player.y + fowRange + 1); j++) { 
 			var d = Math.floor(Math.sqrt((i - player.x)*(i - player.x) + (j - player.y)*(j - player.y)));
@@ -231,7 +224,7 @@ function fow() {
 				raytrace(player.x, player.y, i, j, 2)
 			}
 		}
-    }
+	}
 	
 	if (lookMode) {
 		for (var i = player.x - fowRange - 1; i < player.x + fowRange + 2; i++) { 
@@ -252,7 +245,7 @@ function isBlocking(object, x, y) {
 		if (y < 0 || y >= camera.size || x < 0 || x >= camera.size) {
 			return true;
 		} 
-	} else {
+		} else {
 		if (y < 0 || y >= mapHeight || x < 0 || x >= mapWidth) {
 			return true;
 		}
@@ -296,7 +289,7 @@ function drawMap() {
 	
 	//draw walls
 	drawWalls(ctx)
-
+	
 	//draw characters	
 	if (player.health > 0) {
 		objectCtx.drawImage(heroImage, (player.x + camera.offsetX) * MapScale, (player.y + camera.offsetY) * MapScale);
@@ -366,14 +359,14 @@ function place() {
 
 function drawLook(objectCtx) {
 	if (pathbool) pathOut(path);
-
+	
 	var Stats = $("stats");
 	var stats = Stats.getContext("2d");
 	var wall = finalMap[look.y - camera.offsetY][look.x - camera.offsetX];
 	
 	if (((look.x - camera.offsetX) == player.x)&&((look.y - camera.offsetY) == player.y)) { 
 		var lookPlayer = true;
-	} else {	
+		} else {	
 		for (var i = 0; i < monsters.length; i++) {
 			if (((look.x - camera.offsetX) == monsters[i].x)&&((look.y - camera.offsetY) == monsters[i].y)) { 
 				var lookMonster = true;
@@ -408,15 +401,13 @@ function drawLook(objectCtx) {
 		}
 		
 		if (((prevx == look.x) && (prevy == look.y)) || ((player.x == (look.x - camera.offsetX)) && player.y == (look.y - camera.offsetY))) {
-		//nada
-		} else {
-		if (Math.floor(Math.sqrt((look.x - camera.offsetX - player.x)*(look.x - camera.offsetX - player.x) + (look.y - camera.offsetY - player.y)*(look.y - camera.offsetY - player.y))) < fowRange) {
-		raytrace(player.x, player.y, (look.x - camera.offsetX), (look.y - camera.offsetY), 3);
-		}
-		grid = new PF.Grid(finalMap[0].length, finalMap.length, finalMap);
-		path = finder.findPath(player.x, player.y, (look.x - camera.offsetX), (look.y - camera.offsetY), grid);
-		//console.log('p ' + player.x + ' ' + player.y);
-		//console.log('l ' + (look.x - camera.offsetX) + ' ' + (look.y - camera.offsetY));
+			//nada
+			} else {
+			raytrace(player.x, player.y, (look.x - camera.offsetX), (look.y - camera.offsetY), 3);
+			grid = new PF.Grid(finalMap[0].length, finalMap.length, finalMap);
+			path = finder.findPath(player.x, player.y, (look.x - camera.offsetX), (look.y - camera.offsetY), grid);
+			//console.log('p ' + player.x + ' ' + player.y);
+			//console.log('l ' + (look.x - camera.offsetX) + ' ' + (look.y - camera.offsetY));
 		}
 	}
 	
@@ -439,7 +430,7 @@ function pathOut(path) {
 		z++;
 		if (z >= length) clearInterval(hope);
 	}, 100);
-
+	
 	pathbool = false;
 	lookMode = false;
 	bind();
@@ -453,16 +444,16 @@ function drawWalls(ctx) {
 			
 			if (wall == 0) {
 				//ground
-				ctx.fillStyle = "#D1D1D1";
-				ctx.fillRect(
-				x * MapScale, y * MapScale, MapScale, MapScale);
-				//ctx.drawImage(groundImage, x * MapScale, y * MapScale);
+				//ctx.fillStyle = "#D1D1D1";
+				//ctx.fillRect(
+				//x * MapScale, y * MapScale, MapScale, MapScale);
+				ctx.drawImage(groundImage, x * MapScale, y * MapScale);
 				} else if (wall > 0) {
 				//wall
-				ctx.fillStyle = "#666666";
-				ctx.fillRect(
-				x * MapScale, y * MapScale, MapScale, MapScale);
-				//ctx.drawImage(wallImage, x * MapScale, y * MapScale);
+				//ctx.fillStyle = "#666666";
+				//ctx.fillRect(
+				//x * MapScale, y * MapScale, MapScale, MapScale);
+				ctx.drawImage(wallImage, x * MapScale, y * MapScale);
 				} else if (wall == 9) {
 				//outerbounds
 				ctx.fillStyle = "#000000";
@@ -538,42 +529,32 @@ function print (text) {
 
 //los check
 function raytrace(x0, y0, x1, y1, num) {
-    var dx = Math.abs(x1 - x0);
-    var dy = Math.abs(y1 - y0);
-    var x = x0;
-    var y = y0;
-    var n = 1 + dx + dy;
-    var x_inc = (x1 > x0) ? 1 : -1;
-    var y_inc = (y1 > y0) ? 1 : -1;
-    var error = dx - dy;
 	var arr = [];
 	var toDrawX = [];
 	var toDrawY = [];
 	var wall;
-
-    dx *= 2;
-    dy *= 2;
-	//console.log('-------------');
-
-    for (; n > 0; --n) {
-		//console.log('x ' + x + ' y ' + y);
-        fowMap[y][x] = num;
-		toDrawX.push(x);
-		toDrawY.push(y);
+	
+	var dx = Math.abs(x1-x0);
+	var dy = Math.abs(y1-y0);
+	var sx = (x0 < x1) ? 1 : -1;
+	var sy = (y0 < y1) ? 1 : -1;
+	var err = dx-dy;
+	
+	while(true){
+        fowMap[y0][x0] = num;
+		toDrawX.push(x0);
+		toDrawY.push(y0);
 		
-		wall = finalMap[y][x];
+		wall = finalMap[y0][x0];
 		arr.push(wall);
 		
 		if (wall == 1) break;
 		
-        if (error > 0) {
-            x += x_inc;
-            error -= dy;
-        } else {
-            y += y_inc;
-            error += dx;
-        }
-    }
+		if ((x0==x1) && (y0==y1)) break;
+		var e2 = 2*err;
+		if (e2 >-dy){ err -= dy; x0  += sx; }
+		if (e2 < dx){ err += dx; y0  += sy; }
+	}
 }
 
 init();										
