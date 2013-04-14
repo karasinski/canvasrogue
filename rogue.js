@@ -59,7 +59,7 @@ var mapWidth = 0;
 var mapHeight = 0;
 var MapScale = 32;
 var turn = 1;
-var fowRange = 8;
+var fowRange = 10;
 
 var prevx, prevy;
 var grid, path, pathbool = false;
@@ -70,7 +70,7 @@ var lookMode = false;
 function init() {
 	mapWidth = finalMap[0].length;
 	mapHeight = finalMap.length;
-	textbox.value += 'Let\'s start this bitch up!';
+	textbox.value += 'Start the game!';
 	
 	bind();
 	bindKeys();
@@ -91,6 +91,7 @@ function bind() {
 		current = look;
 		print('\rLook mode activated!');
 		} else if (!lookMode) {
+		fow();
 		current = player;
 		if (!firstRun) print('\rLook mode deactivated!');
 	}
@@ -122,7 +123,7 @@ function bindKeys() {
 			
 			if (lookMode) {
 				pathbool = true; 
-				console.log('derp');
+				//console.log('derp');
 			}
 			break;
 			
@@ -214,12 +215,23 @@ function fow() {
 		} 
 	} 
 	
-	for (var i = player.x - fowRange; i < player.x + fowRange+1; i++) { 
-		for (var j = player.y - fowRange; j < player.y + fowRange+1; j++) { 
-			var fog = fowMap[j][j];
-			fowMap[j][i] = 2; 
-		} 
-	} 
+	// for (var i = player.x - fowRange; i < player.x + fowRange+1; i++) { 
+		// for (var j = player.y - fowRange; j < player.y + fowRange+1; j++) { 
+			// var fog = fowMap[j][j];
+			// fowMap[j][i] = 2; 
+		// } 
+	// } 
+	
+	for (var i = (player.x - fowRange); i < (player.x + fowRange + 1); i++) { 
+		for (var j = (player.y - fowRange); j < (player.y + fowRange + 1); j++) { 
+			var d = Math.floor(Math.sqrt((i - player.x)*(i - player.x) + (j - player.y)*(j - player.y)));
+            if (d < fowRange) {
+				//fowMap[j][i] = 2; 
+				var wall = finalMap[j][i];
+				raytrace(player.x, player.y, i, j, 2)
+			}
+		}
+    }
 	
 	if (lookMode) {
 		for (var i = player.x - fowRange - 1; i < player.x + fowRange + 2; i++) { 
@@ -398,7 +410,9 @@ function drawLook(objectCtx) {
 		if (((prevx == look.x) && (prevy == look.y)) || ((player.x == (look.x - camera.offsetX)) && player.y == (look.y - camera.offsetY))) {
 		//nada
 		} else {
-		raytrace(player.x, player.y, (look.x - camera.offsetX), (look.y - camera.offsetY))
+		if (Math.floor(Math.sqrt((look.x - camera.offsetX - player.x)*(look.x - camera.offsetX - player.x) + (look.y - camera.offsetY - player.y)*(look.y - camera.offsetY - player.y))) < fowRange) {
+		raytrace(player.x, player.y, (look.x - camera.offsetX), (look.y - camera.offsetY), 3);
+		}
 		grid = new PF.Grid(finalMap[0].length, finalMap.length, finalMap);
 		path = finder.findPath(player.x, player.y, (look.x - camera.offsetX), (look.y - camera.offsetY), grid);
 		//console.log('p ' + player.x + ' ' + player.y);
@@ -414,14 +428,14 @@ function drawLook(objectCtx) {
 
 function pathOut(path) {
 	var ex, why;
-	console.log('----------');
+	//console.log('----------');
 	var z = 1, length = path.length; 
 	var hope =	setInterval(function() {
 		ex = path[z][0];
 		why = path[z][1]; 
 		console.log(ex + ' ' + why);
 		move(player, ex - player.x, why - player.y);
-		console.log('moved');
+		//console.log('moved');
 		z++;
 		if (z >= length) clearInterval(hope);
 	}, 100);
@@ -523,7 +537,7 @@ function print (text) {
 
 
 //los check
-function raytrace(x0, y0, x1, y1) {
+function raytrace(x0, y0, x1, y1, num) {
     var dx = Math.abs(x1 - x0);
     var dy = Math.abs(y1 - y0);
     var x = x0;
@@ -532,20 +546,30 @@ function raytrace(x0, y0, x1, y1) {
     var x_inc = (x1 > x0) ? 1 : -1;
     var y_inc = (y1 > y0) ? 1 : -1;
     var error = dx - dy;
+	var arr = [];
+	var toDrawX = [];
+	var toDrawY = [];
+	var wall;
+
     dx *= 2;
     dy *= 2;
+	//console.log('-------------');
 
-    for (; n > 0; --n)
-    {
-        fowMap[y][x] = 3;
-
-        if (error > 0)
-        {
+    for (; n > 0; --n) {
+		//console.log('x ' + x + ' y ' + y);
+        fowMap[y][x] = num;
+		toDrawX.push(x);
+		toDrawY.push(y);
+		
+		wall = finalMap[y][x];
+		arr.push(wall);
+		
+		if (wall == 1) break;
+		
+        if (error > 0) {
             x += x_inc;
             error -= dy;
-        }
-        else
-        {
+        } else {
             y += y_inc;
             error += dx;
         }
