@@ -28,10 +28,6 @@
 var $ = function(id) {return document.getElementById(id); };
 var textbox = document.getElementById('textbox');
 
-var heroImage = new Image(); heroImage.src = "face.png";
-var groundImage = new Image(); groundImage.src = "ground.png";
-var wallImage = new Image(); wallImage.src = "wall.png";
-
 var camera = {
 	size: 25,
 	offsetX: 0,
@@ -300,7 +296,7 @@ function drawMap() {
 		var y = monsters[i].y;
 		var fog = fowMap[y][x];
 		
-		if (fog == 2) {
+		if ((fog == 2) || (fog == 3)) {
 			drawObject(monsters[i]);
 		}
 	}
@@ -443,17 +439,19 @@ function drawWalls(ctx) {
 			var fog = fowMap[y][x];
 			
 			if (wall == 0) {
+				var randmap = randMap[y][x];
 				//ground
 				//ctx.fillStyle = "#D1D1D1";
 				//ctx.fillRect(
 				//x * MapScale, y * MapScale, MapScale, MapScale);
-				ctx.drawImage(groundImage, x * MapScale, y * MapScale);
+				ctx.drawImage(dirt[randmap], x * MapScale, y * MapScale);
 				} else if (wall > 0) {
+				var randgmap = randgMap[y][x];
 				//wall
 				//ctx.fillStyle = "#666666";
 				//ctx.fillRect(
 				//x * MapScale, y * MapScale, MapScale, MapScale);
-				ctx.drawImage(wallImage, x * MapScale, y * MapScale);
+				ctx.drawImage(vine[randgmap], x * MapScale, y * MapScale);
 				} else if (wall == 9) {
 				//outerbounds
 				ctx.fillStyle = "#000000";
@@ -476,7 +474,7 @@ function drawWalls(ctx) {
 				//draw nothing
 				} else if (fog == 3) {
 				//have seen
-				ctx.fillStyle = "rgba(255,255,0,0.5)";
+				ctx.fillStyle = "rgba(255,255,0,0.15)";
 				ctx.fillRect(
 				x * MapScale, y * MapScale, MapScale, MapScale);
 			} 
@@ -489,9 +487,10 @@ function drawObject(object) {
 	var objectCtx = MapObjects.getContext("2d");
 	
 	if (object.health > 0) {
-		objectCtx.fillStyle = object.color;
-		objectCtx.fillRect(
-		(object.x + camera.offsetX) * MapScale, (object.y + camera.offsetY)  * MapScale, MapScale, MapScale);
+		objectCtx.drawImage(object.image, (object.x + camera.offsetX) * MapScale, (object.y + camera.offsetY) * MapScale);
+		//objectCtx.fillStyle = object.color;
+		//objectCtx.fillRect(
+		//(object.x + camera.offsetX) * MapScale, (object.y + camera.offsetY)  * MapScale, MapScale, MapScale);
 	} 	
 }
 
