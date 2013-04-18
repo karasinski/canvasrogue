@@ -1,17 +1,13 @@
-var monsters = [
+/*--------------------------------------------
+	How many monsters should we stick in this map?
+--------------------------------------------*/
+//how many 0s are in finalMap? Now with less for loops!
+var numberFloorTiles = String(finalMap).replace(/[^0]+/g,'').length;
+var monsterConcentration = 1 / 20;
+var numMonsters = Math.round(numberFloorTiles * monsterConcentration);
+//console.log(numMonsters);
 
-dragon = {
-	name: "Dragon",
-	color: "#FF00FF",
-	image: dragonImage,
-	x: 40,
-	y: 40,
-	n: 3,
-	s: 6,
-	c: 10,
-	health: 50,
-	maxhealth: 50
-},
+var monsterTypes = [
 
 rat = {
 	name: "Rat",
@@ -37,6 +33,23 @@ spider = {
 	c: 10,
 	health: 20,
 	maxhealth: 20
+},
+
+dragon = {
+	name: "Dragon",
+	color: "#FF00FF",
+	image: dragonImage,
+	x: 40,
+	y: 40,
+	n: 3,
+	s: 6,
+	c: 10,
+	health: 50,
+	maxhealth: 50
 }
+
+];
+
+var monsters = [
 
 ];

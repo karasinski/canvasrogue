@@ -71,7 +71,6 @@ for (var y = 0; y < mapHeight; y++) {
 		finalMap[y+blanks/2][x+blanks/2] = map[y][x];
 	}
 }
-
 //console.log(finalMap);
 
 //create fow map
@@ -85,6 +84,11 @@ for (var i = 0; i < finalMapWidth; i++) {
 
 //console.log(fowMap);
 
+
+/*--------------------------------------------
+We are generating random numbers for assigning 
+grid graphics to the ground and the walls. Neat!
+--------------------------------------------*/
 //create rand wall map
 var randMap = [];
 for (var i = 0; i < finalMapWidth; i++) { 
@@ -105,11 +109,17 @@ for (var i = 0; i < finalMapWidth; i++) {
   } 
 }
 
-//magical pathfinding
+/*--------------------------------------------
+Initializing our pathfinding library.
+--------------------------------------------*/
 var finder = new PF.AStarFinder({
 	allowDiagonal: true
 });
 
+/*--------------------------------------------
+Load a bunch of images!
+Put some images in arrays to simplify things.
+--------------------------------------------*/
 var heroImage = new Image(); heroImage.src = "img/face.png";
 var ratImage = new Image(); ratImage.src = "img/rat.png";
 var spiderImage = new Image(); spiderImage.src = "img/spider.png";

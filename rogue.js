@@ -1,5 +1,5 @@
 /****************************************
-	Rogue v0.0.2
+	Rogue v0.0.3
 	by Johnny Karasinski
 	
 	TODO
@@ -15,7 +15,6 @@
 	skills/magic/ranged attack (ammunition)
 	basic ai
 	more dungeon levels
-	import art
 	
 	THINGS TO FIX:
 	make autotravel only work on tiles that have been seen
@@ -138,7 +137,9 @@ function gameCycle() {
 }
 
 function move(object, x, y) {
-	if (object == player) turn++;
+	
+	var fail = false;
+	//console.log(object);
 	
 	var newX = object.x + x; // calculate new player position
 	var newY = object.y + y;
@@ -152,7 +153,7 @@ function move(object, x, y) {
 		for (var i = 0; i < monsters.length; i++) {
 			if ((monsters[i].health > 0) && (newX == monsters[i].x) && (newY == monsters[i].y)) {
 				attackMonster(player, monsters[i], newX, newY);
-				if (monsters[i].health > 0) return;
+				if (monsters[i].health > 0) fail = true;
 			}
 		}
 	}
@@ -183,17 +184,23 @@ function move(object, x, y) {
 		}
 	}
 	
+	if (!fail) {
 	object.x = newX; // set new position
 	object.y = newY;
+	}
 	
 	if (object == player) {
 		fow();
+		turn++;
+
+		if (!fail) {
 		camera.offsetX -= x;
 		camera.offsetY -= y;
+		}
 		
 		for (var i = 0; i < monsters.length; i++) {
 			if ((current == player)&&monsters[i].health>0) {
-				move(monsters[i], Math.floor((Math.random()*3)-1), Math.floor((Math.random()*3)-1));
+				move(monsters[i], rand(-1,1), rand(-1,1));
 			}
 		}
 	}
@@ -316,18 +323,76 @@ function drawMap() {
 	ctxspell.fillRect(0, 0, MapScale, MapScale);	
 } */
 
+function clone(obj) {
+	var target = {};
+	for (var i in obj) {
+		if (obj.hasOwnProperty(i)) {
+			target[i] = obj[i];
+		}
+	}
+	return target;
+}
+
+function genMonster(count, i) {
+	var myString = monsterTypes[i].name + count[i];
+	window[myString] = clone(monsterTypes[i]);
+	//myString = clone(monsterTypes[0]);
+	//console.log(myString);
+	monsters.push(window[myString]);
+	count[i]++;
+}
+
 function place() {
-	for (i = 0; i < monsters.length; i++) {		
+	//need to add monsters to the monsters array
+	
+	var count = [];
+	for (var i = 0; i < monsterTypes.length; i++) count[i] = 0;
+	
+	for (var i = 0; i < numMonsters; i++) {
+		var r = Math.random();
+		
+		if (r < .5) {
+			genMonster(count, 0);
+			} else if (r <.95) {
+			genMonster(count, 1);
+			} else {
+			genMonster(count, 2);
+		}
+	}
+	
+	//need to place all monsters in the monsters array
+	for (var i = 0; i < monsters.length; i++) {		
 		
 		var x = blanks/2;
 		var y = x;
 		var collision = 1;
+		var monsterCollision = 1;
 		
 		//does not check monster collisions
-		while ((collision > 0) && (player.x - x != 0 && player.y - y != 0)) {
+		//		while ((collision > 0) && (monsterCollision > 0) && (player.x - x != 0 && player.y - y != 0)) {
+		while ((collision != 0) || (monsterCollision != 0)) {
 			x = (Math.floor((Math.random() * (finalMap[0].length - blanks)) + blanks/2));
 			y = (Math.floor((Math.random() * (finalMap.length - blanks)) + blanks/2));
+			//console.log(i);
+			
 			collision = finalMap[y - camera.offsetY][x - camera.offsetX];
+			
+			if (i == 0) {
+				monsterCollision = 0;
+				} else if (collision == 0) {
+				var bool = true;
+				for (var j = 0; j < i; j++) {
+					//console.log('j');
+					if (x == monsters[j].x && y == monsters[j].y) {
+						//console.log('bad');
+						bool = false;
+						break;
+					}
+				}
+				if (bool) monsterCollision = 0;
+			}
+			
+			
 		}
 		
 		monsters[i].x = x;
@@ -335,12 +400,28 @@ function place() {
 		//console.log(x, y);
 	}
 	
-	collision = 1;
+	var collision = 1;
 	
-	while (collision > 0) {
-		x = (Math.floor((Math.random() * (finalMap[0].length - blanks)) + blanks/2));
-		y = (Math.floor((Math.random() * (finalMap.length - blanks)) + blanks/2));
+		while ((collision != 0) || (monsterCollision != 0)) {
+		var x = (Math.floor((Math.random() * (finalMap[0].length - blanks)) + blanks/2));
+		var y = (Math.floor((Math.random() * (finalMap.length - blanks)) + blanks/2));
 		collision = finalMap[y - camera.offsetY][x - camera.offsetX];
+		
+		
+		if (i == 0) {
+			monsterCollision = 0;
+			} else if (collision == 0) {
+			var bool = true;
+			for (var j = 0; j < i; j++) {
+				//console.log('j');
+				if (x == monsters[j].x && y == monsters[j].y) {
+					//console.log('bad');
+					bool = false;
+					break;
+				}
+			}
+			if (bool) monsterCollision = 0;
+		}
 	}
 	
 	player.x = x;
@@ -380,7 +461,7 @@ function drawLook(objectCtx) {
 		objectCtx.fillRect(look.x * MapScale, look.y * MapScale, MapScale, MapScale);
 		objectCtx.fillStyle = 'black';
 		objectCtx.font = '12px Monospace';
-        objectCtx.fillText((look.x - camera.offsetX) + ', ' + (look.y - camera.offsetY), look.x * MapScale, look.y * MapScale); // just to show where we are drawing these things
+		objectCtx.fillText((look.x - camera.offsetX) + ', ' + (look.y - camera.offsetY), look.x * MapScale, look.y * MapScale); // just to show where we are drawing these things
 		
 		if (lookPlayer) {
 			stats.fillText('This is you, dipshit.', 0,18*13);
@@ -420,7 +501,7 @@ function pathOut(path) {
 	var hope =	setInterval(function() {
 		ex = path[z][0];
 		why = path[z][1]; 
-		console.log(ex + ' ' + why);
+		//console.log(ex + ' ' + why);
 		move(player, ex - player.x, why - player.y);
 		//console.log('moved');
 		z++;
@@ -520,7 +601,12 @@ function rollDice(N, S) {
 	return value;
 }
 
-function print (text) {
+//a not shitty random function
+function rand(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function print(text) {
 	textbox.value += text
 	textbox.scrollTop = textbox.scrollHeight;
 }
