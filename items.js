@@ -103,9 +103,6 @@ function getRandomItem(level) {
         itemCumWeight += itemForLevel[i][2];
         if (random < itemCumWeight) {
 			//if we've found gold we randomly generate an amount
-			if (itemForLevel[i][0] == "Gold") {
-				gold.amount = rand(level, level * 100);
-			}
 			return(itemForLevel[i][1]);
 		}
 	}

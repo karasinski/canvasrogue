@@ -37,19 +37,6 @@ var look = {
 	y: 5
 };
 
-var player = {
-	name: "Player",
-	color: "#A01010",
-	x: 12,
-	y: 12,
-	n: 2,
-	s: 6,
-	c: 20,
-	health: 25,
-	maxhealth: 25,
-	experience: 0
-};
-
 var mapWidth = 0;
 var mapHeight = 0;
 var MapScale = 32;
@@ -116,12 +103,12 @@ function bindKeys() {
 			case 105: move(current, 1, -1);	break;
 			case 103: move(current, -1, -1);	break;
 			case 13: 
-			
 			if (lookMode) {
 				pathbool = true; 
 				//console.log('derp');
 			}
 			break;
+			case 71: pickup(); break;
 			
 		}	
 	}
@@ -298,7 +285,7 @@ function drawMap() {
 	//draw actors
 	//items
 	for (i = 0; i < items.length; i++) {
-			var x = items[i].x;
+		var x = items[i].x;
 		var y = items[i].y;
 		var fog = fowMap[y][x];
 		
@@ -322,7 +309,7 @@ function drawMap() {
 	if (player.health > 0) {
 		objectCtx.drawImage(heroImage, (player.x + camera.offsetX) * MapScale, (player.y + camera.offsetY) * MapScale);
 	}
-
+	
 	
 	// draw the current look position
 	drawLook(objectCtx);
@@ -482,11 +469,39 @@ function placeItems() {
 			collision = finalMap[y - camera.offsetY][x - camera.offsetX];
 		}
 		
+		if (items[i].name == "Gold") items[i].amount = rand(1, 100);
 		items[i].x = x;
 		items[i].y = y;
 		//console.log(x, y);
 	}
 	
+}
+
+function pickup() {
+	for (var i = 0; i < items.length; i++) {
+		if (player.x == items[i].x && player.y == items[i].y) {
+			//move item to inventory
+			
+			if (items[i].name == "Gold") {
+				if (inventory[0].name == "Gold") {
+					//console.log("I love gold!");
+					console.log('pick up ' + items[i].amount);
+					inventory[0].amount += items[i].amount;	
+					console.log('total ' + inventory[0].amount);
+				} else console.log('ERROR');
+				
+				} else {			
+				inventory.push(items[i]);
+			}
+			//delete items[i];
+			//items.splice(i, i);
+			items[i].x = 0;
+			items[i].y = 0;
+			//console.log(items[i]);
+			//console.log('pick up');
+			break;
+		}
+	}
 }
 
 function drawLook(objectCtx) {
@@ -628,7 +643,7 @@ function drawObject(object) {
 		//objectCtx.fillStyle = object.color;
 		//objectCtx.fillRect(
 		//(object.x + camera.offsetX) * MapScale, (object.y + camera.offsetY)  * MapScale, MapScale, MapScale);
-	} else if (object.health == null) {
+		} else if (object.health == null) {
 		objectCtx.drawImage(object.image,
 		(object.x + camera.offsetX) * MapScale, (object.y + camera.offsetY) * MapScale);
 	} 	
