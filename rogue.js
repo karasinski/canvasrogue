@@ -2,8 +2,6 @@
 	Rogue v0.0.3
 	by Johnny Karasinski
 	
-	TODO
-	
 	SOON:
 	implement an items class
 	implement an inventory
@@ -17,6 +15,7 @@
 	more dungeon levels
 	
 	THINGS TO FIX:
+	monsters can spawn on top of you! (eek)
 	make autotravel only work on tiles that have been seen
 	
 	WHEN will this game be done?
@@ -47,7 +46,8 @@ var player = {
 	s: 6,
 	c: 20,
 	health: 25,
-	maxhealth: 25
+	maxhealth: 25,
+	experience: 0
 };
 
 var mapWidth = 0;
@@ -69,6 +69,7 @@ function init() {
 	
 	bind();
 	bindKeys();
+	placeItems();
 	place();
 	fow();
 	drawMap();
@@ -185,17 +186,17 @@ function move(object, x, y) {
 	}
 	
 	if (!fail) {
-	object.x = newX; // set new position
-	object.y = newY;
+		object.x = newX; // set new position
+		object.y = newY;
 	}
 	
 	if (object == player) {
 		fow();
 		turn++;
-
+		
 		if (!fail) {
-		camera.offsetX -= x;
-		camera.offsetY -= y;
+			camera.offsetX -= x;
+			camera.offsetY -= y;
 		}
 		
 		for (var i = 0; i < monsters.length; i++) {
@@ -283,8 +284,9 @@ function drawMap() {
 	stats.font = '18px Monospace';
 	stats.fillText('Turn ' + turn, 0,18); 
 	stats.fillText(player.name, 0,18*2);
-	stats.fillText('Health ' + player.health + '/' + player.maxhealth, 0,18*4);
-	stats.fillText('You do ' + player.n + 'd' + player.s + ' damage', 0,18*5); 
+	stats.fillText('Experience ' + player.experience, 0,18*3); 
+	stats.fillText('Health ' + player.health + '/' + player.maxhealth, 0,18*5);
+	stats.fillText('You do ' + player.n + 'd' + player.s + ' damage', 0,18*6); 
 	
 	//ctx.save();
 	ctx.translate(camera.offsetX*MapScale, camera.offsetY*MapScale);
@@ -293,11 +295,19 @@ function drawMap() {
 	//draw walls
 	drawWalls(ctx)
 	
-	//draw characters	
-	if (player.health > 0) {
-		objectCtx.drawImage(heroImage, (player.x + camera.offsetX) * MapScale, (player.y + camera.offsetY) * MapScale);
+	//draw actors
+	//items
+	for (i = 0; i < items.length; i++) {
+			var x = items[i].x;
+		var y = items[i].y;
+		var fog = fowMap[y][x];
+		
+		if ((fog == 2) || (fog == 3)) {
+			drawObject(items[i]);
+		}
 	}
 	
+	//monsters
 	for (i = 0; i < monsters.length; i++) {
 		var x = monsters[i].x;
 		var y = monsters[i].y;
@@ -307,6 +317,12 @@ function drawMap() {
 			drawObject(monsters[i]);
 		}
 	}
+	
+	//player (that's you!)
+	if (player.health > 0) {
+		objectCtx.drawImage(heroImage, (player.x + camera.offsetX) * MapScale, (player.y + camera.offsetY) * MapScale);
+	}
+
 	
 	// draw the current look position
 	drawLook(objectCtx);
@@ -333,7 +349,7 @@ function clone(obj) {
 	return target;
 }
 
-function genMonster(count, i) {
+function genVar(count, i) {
 	var myString = monsterTypes[i].name + count[i];
 	window[myString] = clone(monsterTypes[i]);
 	//myString = clone(monsterTypes[0]);
@@ -352,11 +368,11 @@ function place() {
 		var r = Math.random();
 		
 		if (r < .5) {
-			genMonster(count, 0);
+			genVar(count, 0);
 			} else if (r <.95) {
-			genMonster(count, 1);
+			genVar(count, 1);
 			} else {
-			genMonster(count, 2);
+			genVar(count, 2);
 		}
 	}
 	
@@ -402,7 +418,7 @@ function place() {
 	
 	var collision = 1;
 	
-		while ((collision != 0) || (monsterCollision != 0)) {
+	while ((collision != 0) || (monsterCollision != 0)) {
 		var x = (Math.floor((Math.random() * (finalMap[0].length - blanks)) + blanks/2));
 		var y = (Math.floor((Math.random() * (finalMap.length - blanks)) + blanks/2));
 		collision = finalMap[y - camera.offsetY][x - camera.offsetX];
@@ -432,6 +448,45 @@ function place() {
 	camera.offsetX = -player.x+Math.floor(mapWidth/8); 
 	camera.offsetY = -player.y+Math.floor(mapHeight/8)-1;
 	//console.log(camera.offsetX, camera.offsetY);
+}
+
+function genVar2(count, i, temp) {
+	var myString = temp.name + count[i];
+	window[myString] = clone(temp);
+	//myString = clone(monsterTypes[0]);
+	//console.log(myString);
+	items.push(window[myString]);
+	count[i]++;
+}
+
+function placeItems() {
+	var icount = [];
+	for (var i = 0; i < ITEM[1].length; i++) icount[i] = 0;
+	
+	for (var i = 0; i < numItems; i++) {
+		var temp = getRandomItem(1);
+		genVar2(icount, i, temp);		
+	}
+	
+	//need to place all items in the items arrays
+	for (var i = 0; i < items.length; i++) {		
+		var x = blanks/2;
+		var y = x;
+		var collision = 1;
+		
+		while (collision != 0) {
+			x = (Math.floor((Math.random() * (finalMap[0].length - blanks)) + blanks/2));
+			y = (Math.floor((Math.random() * (finalMap.length - blanks)) + blanks/2));
+			//console.log(i);
+			
+			collision = finalMap[y - camera.offsetY][x - camera.offsetX];
+		}
+		
+		items[i].x = x;
+		items[i].y = y;
+		//console.log(x, y);
+	}
+	
 }
 
 function drawLook(objectCtx) {
@@ -567,11 +622,15 @@ function drawObject(object) {
 	var MapObjects = $("mapobjects");
 	var objectCtx = MapObjects.getContext("2d");
 	
-	if (object.health > 0) {
-		objectCtx.drawImage(object.image, (object.x + camera.offsetX) * MapScale, (object.y + camera.offsetY) * MapScale);
+	if (object.health > 0 || object == items) {
+		objectCtx.drawImage(object.image,
+		(object.x + camera.offsetX) * MapScale, (object.y + camera.offsetY) * MapScale);
 		//objectCtx.fillStyle = object.color;
 		//objectCtx.fillRect(
 		//(object.x + camera.offsetX) * MapScale, (object.y + camera.offsetY)  * MapScale, MapScale, MapScale);
+	} else if (object.health == null) {
+		objectCtx.drawImage(object.image,
+		(object.x + camera.offsetX) * MapScale, (object.y + camera.offsetY) * MapScale);
 	} 	
 }
 
@@ -579,10 +638,15 @@ function attackMonster(attacker, victim, newX, newY) {
 	attack(attacker.n, attacker.s, attacker.c);
 	victim.health -= damage;
 	if (victim.health > 0) {
-		print('\r' + attacker.name + ' hit ' + victim.name + ' for ' + damage + ' damage! ' + victim.name + ' has ' + victim.health + ' health.');
+		print('\r' + attacker.name + ' ' + hit[rand(0,hit.length)] + 's ' + victim.name + ' for ' + damage + ' damage! ' + victim.name + ' has ' + victim.health + ' health.');
 	}
 	if (victim.health <= 0) {
-		print('\r' + attacker.name + ' hit ' + victim.name + ' for ' + damage + ' damage! ' + victim.name + ' dies a horrible death.');
+		print('\r' + attacker.name + ' ' + hit[rand(0,hit.length)] + 's ' + victim.name + ' for ' + damage + ' damage! ' + victim.name + ' dies a ' + horrible[rand(0,horrible.length)] + ' death.');
+	}
+	if (victim.health <= 0) {
+		console.log('ded');
+		//should remove the object from the array and provide experience to player here
+		attacker.experience += victim.experience;
 	}
 }
 

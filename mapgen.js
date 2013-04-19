@@ -120,26 +120,21 @@ var finder = new PF.AStarFinder({
 Load a bunch of images!
 Put some images in arrays to simplify things.
 --------------------------------------------*/
-var heroImage = new Image(); heroImage.src = "img/face.png";
-var ratImage = new Image(); ratImage.src = "img/rat.png";
-var spiderImage = new Image(); spiderImage.src = "img/spider.png";
-var dragonImage = new Image(); dragonImage.src = "img/dragon.png";
-
-var dirtImage0 = new Image(); dirtImage0.src = "img/grey_dirt0.png";
-var dirtImage1 = new Image(); dirtImage1.src = "img/grey_dirt1.png";
-var dirtImage2 = new Image(); dirtImage2.src = "img/grey_dirt2.png";
-var dirtImage3 = new Image(); dirtImage3.src = "img/grey_dirt3.png";
-var dirtImage4 = new Image(); dirtImage4.src = "img/grey_dirt4.png";
-var dirtImage5 = new Image(); dirtImage5.src = "img/grey_dirt5.png";
-var dirtImage6 = new Image(); dirtImage6.src = "img/grey_dirt6.png";
-var dirtImage7 = new Image(); dirtImage7.src = "img/grey_dirt7.png";
+var dirtImage0 = new Image(); dirtImage0.src = "img/map/grey_dirt0.png";
+var dirtImage1 = new Image(); dirtImage1.src = "img/map/grey_dirt1.png";
+var dirtImage2 = new Image(); dirtImage2.src = "img/map/grey_dirt2.png";
+var dirtImage3 = new Image(); dirtImage3.src = "img/map/grey_dirt3.png";
+var dirtImage4 = new Image(); dirtImage4.src = "img/map/grey_dirt4.png";
+var dirtImage5 = new Image(); dirtImage5.src = "img/map/grey_dirt5.png";
+var dirtImage6 = new Image(); dirtImage6.src = "img/map/grey_dirt6.png";
+var dirtImage7 = new Image(); dirtImage7.src = "img/map/grey_dirt7.png";
 var dirt = [dirtImage0, dirtImage1, dirtImage2, dirtImage3, dirtImage4, dirtImage5, dirtImage6, dirtImage7];
 
-var vineImage0 = new Image(); vineImage0.src = "img/wall_vines0.png";
-var vineImage1 = new Image(); vineImage1.src = "img/wall_vines1.png";
-var vineImage2 = new Image(); vineImage2.src = "img/wall_vines2.png";
-var vineImage3 = new Image(); vineImage3.src = "img/wall_vines3.png";
-var vineImage4 = new Image(); vineImage4.src = "img/wall_vines4.png";
-var vineImage5 = new Image(); vineImage5.src = "img/wall_vines5.png";
-var vineImage6 = new Image(); vineImage6.src = "img/wall_vines6.png";
+var vineImage0 = new Image(); vineImage0.src = "img/map/wall_vines0.png";
+var vineImage1 = new Image(); vineImage1.src = "img/map/wall_vines1.png";
+var vineImage2 = new Image(); vineImage2.src = "img/map/wall_vines2.png";
+var vineImage3 = new Image(); vineImage3.src = "img/map/wall_vines3.png";
+var vineImage4 = new Image(); vineImage4.src = "img/map/wall_vines4.png";
+var vineImage5 = new Image(); vineImage5.src = "img/map/wall_vines5.png";
+var vineImage6 = new Image(); vineImage6.src = "img/map/wall_vines6.png";
 var vine = [vineImage0, vineImage1, vineImage2, vineImage3, vineImage4, vineImage5, vineImage6];
