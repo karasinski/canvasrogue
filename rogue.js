@@ -1,11 +1,8 @@
 /****************************************
-	Rogue v0.0.3
+	Rogue v0.0.4
 	by Johnny Karasinski
 	
-	SOON:
-	implement an items class
-	implement an inventory
-	
+	SOON:	
 	move all map related functions/variables to a different file
 	move all attack functions/variables to a different file
 	
@@ -15,7 +12,6 @@
 	more dungeon levels
 	
 	THINGS TO FIX:
-	monsters can spawn on top of you! (eek)
 	make autotravel only work on tiles that have been seen
 	
 	WHEN will this game be done?
@@ -117,8 +113,9 @@ function bindKeys() {
 function gameCycle() {
 	drawMap();
 	
-	while (player.health <= 0) {
-		ctx.clearRect(0, 0, Map.width, Map.height);
+	if ((player.health <= 0) && (firstRun == false)) {
+		window.location.replace("http://google.com");
+		firstRun = true;
 	}
 	
 	setTimeout(gameCycle, 1000 / 60);
@@ -171,6 +168,10 @@ function move(object, x, y) {
 			}
 		}
 	}
+	
+	//turn success, do a few things for close out
+	//heal a bit
+	if (object.health < object.maxhealth) if (Math.random() < .5) object.health += 1;
 	
 	if (!fail) {
 		object.x = newX; // set new position
@@ -259,7 +260,7 @@ function drawMap() {
 	MapObjects.height = Map.height;
 	//Spells.width = Map.width;
 	//Spells.height = Map.height/4;
-	Stats.width = 2*Map.width/5;
+	Stats.width = 32*10;
 	Stats.height = Map.height;
 	
 	//draw 'blank' background
@@ -267,13 +268,8 @@ function drawMap() {
 	var objectCtx = MapObjects.getContext("2d");
 	var stats = Stats.getContext("2d");
 	
-	stats.fillStyle = 'white';
-	stats.font = '18px Monospace';
-	stats.fillText('Turn ' + turn, 0,18); 
-	stats.fillText(player.name, 0,18*2);
-	stats.fillText('Experience ' + player.experience, 0,18*3); 
-	stats.fillText('Health ' + player.health + '/' + player.maxhealth, 0,18*5);
-	stats.fillText('You do ' + player.n + 'd' + player.s + ' damage', 0,18*6); 
+	drawStats(stats);
+	drawInventory(stats);
 	
 	//ctx.save();
 	ctx.translate(camera.offsetX*MapScale, camera.offsetY*MapScale);
@@ -284,6 +280,91 @@ function drawMap() {
 	
 	//draw actors
 	//items
+	drawItems();
+	
+	//monsters
+	drawMonsters();
+	
+	//player (that's you!)
+	if (player.health > 0) {
+		objectCtx.drawImage(heroImage, (player.x + camera.offsetX) * MapScale, (player.y + camera.offsetY) * MapScale);
+	}
+	
+	// draw the current look position
+	drawLook(objectCtx);
+	
+	//draw spell menu
+	//drawSpells();
+}
+
+function drawStats(stats) {
+	stats.fillStyle = 'white';
+	stats.font = '18px Monospace';
+	stats.fillText('Turn ' + turn, 0,18); 
+	stats.fillText(player.name, 0,18*2);
+	stats.fillText('Experience ' + player.experience, 0,18*3); 
+	stats.fillText('Health ' + player.health + '/' + player.maxhealth, 0,18*5);
+	stats.fillText('You do ' + player.n + 'd' + player.s + ' damage', 0,18*6); 
+}
+
+function drawInventory(stats) {
+	var num = 0;
+	for (var i = 0; i < 5; i++) {
+		for (var j = 0; j < 8; j++) {
+			num++
+			//console.log(num);
+			if ((num + i) % 2 == 0) {
+				stats.fillStyle = "grey"; 
+				} else {
+				stats.fillStyle = "lightgrey";
+			}
+			
+			stats.fillRect(32 + j * MapScale, 500 + i * MapScale, MapScale, MapScale);
+			
+			if (num < inventory.length) {
+				//console.log(inventory[num]);
+				stats.drawImage(inventory[num].image, 32 + j * MapScale, 500 + i * MapScale);
+			}
+			
+			stats.fillStyle = "black";
+			
+		}
+	}	
+	
+	num = 0;
+	for (var i = 0; i < 2; i++) {
+		for (var j = 0; j < 8; j++) {
+			num++
+			//console.log(num);
+			if ((num + i) % 2 == 0) {
+				stats.fillStyle = "grey"; 
+				} else {
+				stats.fillStyle = "lightgrey";
+			}
+			
+			stats.fillRect(32 + j * MapScale, 700 + i * MapScale, MapScale, MapScale);
+		}
+	}
+
+	num = 1;	
+	i = 0; j = 0;
+	for (var z = 0; z < items.length; z++) {
+		if (player.x == items[z].x && player.y == items[z].y) {
+			console.log(items[z]);
+			stats.drawImage(items[z].image, 32 + j * MapScale, 700 + i * MapScale);
+			if (j >= 8) {
+				i++;
+				j = 0;
+			} else {
+			j++;
+			}
+		}
+	}
+	
+	stats.fillStyle = "black";
+}
+
+function drawItems() {
 	for (i = 0; i < items.length; i++) {
 		var x = items[i].x;
 		var y = items[i].y;
@@ -293,8 +374,9 @@ function drawMap() {
 			drawObject(items[i]);
 		}
 	}
-	
-	//monsters
+}
+
+function drawMonsters() {
 	for (i = 0; i < monsters.length; i++) {
 		var x = monsters[i].x;
 		var y = monsters[i].y;
@@ -304,18 +386,6 @@ function drawMap() {
 			drawObject(monsters[i]);
 		}
 	}
-	
-	//player (that's you!)
-	if (player.health > 0) {
-		objectCtx.drawImage(heroImage, (player.x + camera.offsetX) * MapScale, (player.y + camera.offsetY) * MapScale);
-	}
-	
-	
-	// draw the current look position
-	drawLook(objectCtx);
-	
-	//draw spell menu
-	//drawSpells();
 }
 
 /* function drawSpells() {
@@ -404,6 +474,7 @@ function place() {
 	}
 	
 	var collision = 1;
+	var monsterCollision = 1;
 	
 	while ((collision != 0) || (monsterCollision != 0)) {
 		var x = (Math.floor((Math.random() * (finalMap[0].length - blanks)) + blanks/2));
@@ -411,11 +482,9 @@ function place() {
 		collision = finalMap[y - camera.offsetY][x - camera.offsetX];
 		
 		
-		if (i == 0) {
-			monsterCollision = 0;
-			} else if (collision == 0) {
+		if (collision == 0) {
 			var bool = true;
-			for (var j = 0; j < i; j++) {
+			for (var j = 0; j < monsters.length; j++) {
 				//console.log('j');
 				if (x == monsters[j].x && y == monsters[j].y) {
 					//console.log('bad');
@@ -483,6 +552,7 @@ function pickup() {
 			//move item to inventory
 			
 			if (items[i].name == "Gold") {
+				print('\r' + player.name + ' picked up ' + items[i].amount + ' gold.');
 				if (inventory[0].name == "Gold") {
 					//console.log("I love gold!");
 					console.log('pick up ' + items[i].amount);
@@ -491,6 +561,7 @@ function pickup() {
 				} else console.log('ERROR');
 				
 				} else {			
+				print('\r' + player.name + ' picked up ' + items[i].name + '.');
 				inventory.push(items[i]);
 			}
 			//delete items[i];
@@ -499,7 +570,9 @@ function pickup() {
 			items[i].y = 0;
 			//console.log(items[i]);
 			//console.log('pick up');
-			break;
+			
+			//this break would allow only one item pick up at a time
+			//break;
 		}
 	}
 }
@@ -659,7 +732,7 @@ function attackMonster(attacker, victim, newX, newY) {
 		print('\r' + attacker.name + ' ' + hit[rand(0,hit.length)] + 's ' + victim.name + ' for ' + damage + ' damage! ' + victim.name + ' dies a ' + horrible[rand(0,horrible.length)] + ' death.');
 	}
 	if (victim.health <= 0) {
-		console.log('ded');
+		//console.log('ded');
 		//should remove the object from the array and provide experience to player here
 		attacker.experience += victim.experience;
 	}
