@@ -120,6 +120,8 @@ var finder = new PF.AStarFinder({
 Load a bunch of images!
 Put some images in arrays to simplify things.
 --------------------------------------------*/
+var cursorImage = new Image(); cursorImage.src = "img/map/tutorial_cursor.png";
+
 var dirtImage0 = new Image(); dirtImage0.src = "img/map/grey_dirt0.png";
 var dirtImage1 = new Image(); dirtImage1.src = "img/map/grey_dirt1.png";
 var dirtImage2 = new Image(); dirtImage2.src = "img/map/grey_dirt2.png";

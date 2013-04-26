@@ -5,17 +5,21 @@
 	SOON:	
 	move all map related functions/variables to a different file
 	move all attack functions/variables to a different file
+	skills/magic/ranged attack
+	basic ai
+	equip items
 	
 	EVENTUALLY:
-	skills/magic/ranged attack (ammunition)
-	basic ai
+	redo the damage/stats system (turn to str dex int)
 	more dungeon levels
 	
 	THINGS TO FIX:
 	make autotravel only work on tiles that have been seen
 	
 	WHEN will this game be done?
-	This game will be done when a player can go down into the dungeon and battle with different types of enemies. The player should be able to weild items and use skills/magic to defeat opponents.	
+	This game will be done when a player can go down into the dungeon 
+	and battle with different types of enemies. The player should be 
+	able to weild items and use skills/magic to defeat opponents.	
 	
 ****************************************/
 
@@ -33,6 +37,11 @@ var look = {
 	y: 5
 };
 
+var inv = {
+	x: 0,
+	y: 0
+};
+
 var mapWidth = 0;
 var mapHeight = 0;
 var MapScale = 32;
@@ -40,10 +49,11 @@ var turn = 1;
 var fowRange = 10;
 
 var prevx, prevy;
-var grid, path, pathbool = false;
+var grid, path, pathbool, equipbool = false;
 
 var firstRun = true;
 var lookMode = false;
+var invMode = false;
 
 function init() {
 	mapWidth = finalMap[0].length;
@@ -68,19 +78,44 @@ function bind() {
 		look.x = player.x + camera.offsetX;
 		look.y = player.y + camera.offsetY;
 		current = look;
-		print('\rLook mode activated!');
-		} else if (!lookMode) {
+		print('\rLook mode!');
+		
+	} 
+	
+	if (invMode) {
+		if (lookMode) !lookMode;
+		//move back to upper left
+		inv.x = 0;
+		inv.y = 0;
+		
+		//fow();
+		current = inv;
+		print('\rInventory mode!');
+		
+	} 
+	
+	if (!(lookMode || invMode)) {
+		invMode = false;
+		lookMode = false;
 		fow();
 		current = player;
-		if (!firstRun) print('\rLook mode deactivated!');
+		if (!firstRun) print('\rMode deactivated!');
 	}
 }
 
 function bindKeys() {
 	document.onkeydown = function(e) {
 		switch (e.keyCode) {
+			
+			case 73:
+			invMode = !invMode;
+			//if (lookMode) !lookMode;
+			bind();
+			break;
+			
 			case 76:
 			lookMode = !lookMode;
+			//if (invMode) !invMode;
 			bind();
 			break;
 			
@@ -98,16 +133,68 @@ function bindKeys() {
 			case 97: move(current, -1, 1);	break;
 			case 105: move(current, 1, -1);	break;
 			case 103: move(current, -1, -1);	break;
+			
+			case 68:
+			if (invMode) {
+				//drop current item
+				print('\rDropped!');
+				drop()
+			}
+			break;
 			case 13: 
 			if (lookMode) {
 				pathbool = true; 
 				//console.log('derp');
+				} else if (invMode) {
+				equipbool = true;
+				//default item action goes here
+				//print('\rEqupped!');
 			}
 			break;
 			case 71: pickup(); break;
 			
 		}	
 	}
+}
+
+function drop() {
+	var num = 0;
+	for (var i = 0; i < 5; i++) {
+		for (var j = 0; j < 8; j++) {
+			num++
+			
+			if (j == inv.x && i == inv.y) {
+				//console.log(inventory[num]);
+				
+				inventory[num].x = player.x;
+				inventory[num].y = player.y;
+				inventory[num].equip = false;
+				inventory.splice(num, 1);
+			}
+		}	
+	}
+}
+
+function equip(num) {
+	equipbool = false;
+	
+	
+	if (inventory[num].equip == false) { 
+		for (var i = 1; i < inventory.length; i++) {	
+			if ((inventory[i].equip == true) && inventory[i].type == inventory[num].type) {
+				//if this item time already equipped, unequip
+				inventory[i].equip = false;
+				break;
+			}
+		}
+		//equip new item
+		inventory[num].equip = true;
+		} else if (inventory[num].equip == true) {
+		//you apparently want to unequip
+		inventory[num].equip = false;
+	}
+	
+	//now equip new item
 }
 
 function gameCycle() {
@@ -128,6 +215,13 @@ function move(object, x, y) {
 	
 	var newX = object.x + x; // calculate new player position
 	var newY = object.y + y;
+	
+	
+	if (invMode) {
+		object.x = newX; // set new position
+		object.y = newY;
+		return;
+	}
 	
 	if (isBlocking(object, newX, newY)) { // are we allowed to move to the new position?
 		return; // nope!
@@ -212,7 +306,7 @@ function fow() {
 			var d = Math.floor(Math.sqrt((i - player.x)*(i - player.x) + (j - player.y)*(j - player.y)));
             if (d < fowRange) {
 				//fowMap[j][i] = 2; 
-				var wall = finalMap[j][i];
+				//var wall = finalMap[j][i];
 				raytrace(player.x, player.y, i, j, 2)
 			}
 		}
@@ -308,6 +402,8 @@ function drawStats(stats) {
 }
 
 function drawInventory(stats) {
+	
+	//this is your inventory
 	var num = 0;
 	for (var i = 0; i < 5; i++) {
 		for (var j = 0; j < 8; j++) {
@@ -324,13 +420,39 @@ function drawInventory(stats) {
 			if (num < inventory.length) {
 				//console.log(inventory[num]);
 				stats.drawImage(inventory[num].image, 32 + j * MapScale, 500 + i * MapScale);
+				
+				if ((j == inv.x && i == inv.y) && invMode) {
+					stats.fillStyle = "white";
+					stats.fillText(inventory[num].name, 0,18*13);
+				}
+				
+				
 			}
 			
-			stats.fillStyle = "black";
+			if (invMode) {
+				if (j == inv.x && i == inv.y) {
+					//console.log(inventory[num]);
+					stats.drawImage(cursorImage, 32 + j * MapScale, 500 + i * MapScale);
+					if (equipbool) {
+						//console.log(num);
+						equip(num);
+						//console.log(num);
+					}
+				}
+			}
 			
+			if (num < inventory.length) {
+				if (inventory[num].equip) {
+					stats.fillStyle = "rgba(0,255,0,0.5)";
+					stats.fillRect(32 + j * MapScale, 500 + i * MapScale, MapScale, MapScale);
+				}
+			}
+			
+			stats.fillStyle = "white";
 		}
 	}	
 	
+	//this is the ground
 	num = 0;
 	for (var i = 0; i < 2; i++) {
 		for (var j = 0; j < 8; j++) {
@@ -345,23 +467,24 @@ function drawInventory(stats) {
 			stats.fillRect(32 + j * MapScale, 700 + i * MapScale, MapScale, MapScale);
 		}
 	}
-
+	
+	//hax to show items on ground in 'ground box'
 	num = 1;	
 	i = 0; j = 0;
 	for (var z = 0; z < items.length; z++) {
 		if (player.x == items[z].x && player.y == items[z].y) {
-			console.log(items[z]);
+			//console.log(items[z]);
 			stats.drawImage(items[z].image, 32 + j * MapScale, 700 + i * MapScale);
 			if (j >= 8) {
 				i++;
 				j = 0;
-			} else {
-			j++;
+				} else {
+				j++;
 			}
 		}
 	}
 	
-	stats.fillStyle = "black";
+	stats.fillStyle = "white";
 }
 
 function drawItems() {
@@ -473,6 +596,7 @@ function place() {
 		//console.log(x, y);
 	}
 	
+	//now we'll place the player
 	var collision = 1;
 	var monsterCollision = 1;
 	
@@ -543,7 +667,6 @@ function placeItems() {
 		items[i].y = y;
 		//console.log(x, y);
 	}
-	
 }
 
 function pickup() {
@@ -555,21 +678,21 @@ function pickup() {
 				print('\r' + player.name + ' picked up ' + items[i].amount + ' gold.');
 				if (inventory[0].name == "Gold") {
 					//console.log("I love gold!");
-					console.log('pick up ' + items[i].amount);
+					//console.log('pick up ' + items[i].amount);
 					inventory[0].amount += items[i].amount;	
 					console.log('total ' + inventory[0].amount);
-				} else console.log('ERROR');
+					items[i].x = 0;
+					items[i].y = 0;
+				} 
 				
-				} else {			
+				} else if (inventory.length <= 40) {			
 				print('\r' + player.name + ' picked up ' + items[i].name + '.');
 				inventory.push(items[i]);
+				items[i].x = 0;
+				items[i].y = 0;
+				} else {
+				print("\r" + player.name + " can't pick up " + items[i].name + ". You already have too many items!");
 			}
-			//delete items[i];
-			//items.splice(i, i);
-			items[i].x = 0;
-			items[i].y = 0;
-			//console.log(items[i]);
-			//console.log('pick up');
 			
 			//this break would allow only one item pick up at a time
 			//break;
@@ -602,9 +725,9 @@ function drawLook(objectCtx) {
 	if (lookMode) {
 		objectCtx.fillStyle = "rgba(0,0,0,.2)";
 		objectCtx.fillRect(look.x * MapScale, look.y * MapScale, MapScale, MapScale);
-		objectCtx.fillStyle = 'black';
-		objectCtx.font = '12px Monospace';
-		objectCtx.fillText((look.x - camera.offsetX) + ', ' + (look.y - camera.offsetY), look.x * MapScale, look.y * MapScale); // just to show where we are drawing these things
+		//objectCtx.fillStyle = 'black';
+		//objectCtx.font = '12px Monospace';
+		//objectCtx.fillText((look.x - camera.offsetX) + ', ' + (look.y - camera.offsetY), look.x * MapScale, look.y * MapScale); // just to show where we are drawing these things
 		
 		if (lookPlayer) {
 			stats.fillText('This is you, dipshit.', 0,18*13);
@@ -620,6 +743,7 @@ function drawLook(objectCtx) {
 			stats.fillText('This is an impenetrable wall.', 0,18*13); 
 		}
 		
+		//player auto travel
 		if (((prevx == look.x) && (prevy == look.y)) || ((player.x == (look.x - camera.offsetX)) && player.y == (look.y - camera.offsetY))) {
 			//nada
 			} else {
@@ -634,8 +758,6 @@ function drawLook(objectCtx) {
 	prevx = look.x;
 	prevy = look.y;
 }
-
-
 
 function pathOut(path) {
 	var ex, why;

@@ -10,9 +10,10 @@ leather = {
 	color: "#C0C0C0",
 	image: leatherImage,
 	price: 50,
+	type: 'armour',
+	equip: false,
 	x: 40,
 	y: 40,
-	weight: 3,
 	bonus: 10
 }
 
@@ -36,6 +37,8 @@ dagger = {
 	color: "#585858",
 	image: daggerImage,
 	price: 70,
+	type: 'weapon',
+	equip: false,
 	x: 41,
 	y: 40,
 	damage: 6,
@@ -111,5 +114,5 @@ function getRandomItem(level) {
 }
 
 var numberFloorTiles = String(finalMap).replace(/[^0]+/g,'').length;
-var itemConcentration = 1 / 5;
+var itemConcentration = 1 / 30;
 var numItems = Math.round(numberFloorTiles * itemConcentration);
