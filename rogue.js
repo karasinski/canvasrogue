@@ -151,7 +151,7 @@ function bindKeys() {
 				//print('\rEqupped!');
 			}
 			break;
-			case 71: pickup(); break;
+			case 71: grab(); break;
 			
 		}	
 	}
@@ -178,7 +178,8 @@ function drop() {
 function equip(num) {
 	equipbool = false;
 	
-	
+	if (num > inventory.length - 1)	return;
+
 	if (inventory[num].equip == false) { 
 		for (var i = 1; i < inventory.length; i++) {	
 			if ((inventory[i].equip == true) && inventory[i].type == inventory[num].type) {
@@ -218,8 +219,8 @@ function move(object, x, y) {
 	
 	
 	if (invMode) {
-		object.x = newX; // set new position
-		object.y = newY;
+		if (newX > 0 && newX < 8) object.x = newX;
+		if (newY > 0 && newY < 5) object.y = newY;
 		return;
 	}
 	
@@ -443,7 +444,7 @@ function drawInventory(stats) {
 			
 			if (num < inventory.length) {
 				if (inventory[num].equip) {
-					stats.fillStyle = "rgba(0,255,0,0.5)";
+					stats.fillStyle = "rgba(255,255,0,0.5)";
 					stats.fillRect(32 + j * MapScale, 500 + i * MapScale, MapScale, MapScale);
 				}
 			}
@@ -659,6 +660,8 @@ function placeItems() {
 			y = (Math.floor((Math.random() * (finalMap.length - blanks)) + blanks/2));
 			//console.log(i);
 			
+			//console.log(finalMap);
+			//console.log(finalMap[y - camera.offsetY][x - camera.offsetX]);
 			collision = finalMap[y - camera.offsetY][x - camera.offsetX];
 		}
 		
@@ -669,7 +672,7 @@ function placeItems() {
 	}
 }
 
-function pickup() {
+function grab() {
 	for (var i = 0; i < items.length; i++) {
 		if (player.x == items[i].x && player.y == items[i].y) {
 			//move item to inventory
@@ -791,13 +794,19 @@ function drawWalls(ctx) {
 				//ctx.fillRect(
 				//x * MapScale, y * MapScale, MapScale, MapScale);
 				ctx.drawImage(dirt[randmap], x * MapScale, y * MapScale);
-				} else if (wall > 0) {
+				} else if (wall == 1) {
 				var randgmap = randgMap[y][x];
 				//wall
 				//ctx.fillStyle = "#666666";
 				//ctx.fillRect(
 				//x * MapScale, y * MapScale, MapScale, MapScale);
 				ctx.drawImage(vine[randgmap], x * MapScale, y * MapScale);
+				} else if (wall == 7) {
+				//downstairs
+				ctx.drawImage(downImage, x * MapScale, y * MapScale);
+				} else if (wall == 8) {
+				//upstairs
+				ctx.drawImage(upImage , x * MapScale, y * MapScale);
 				} else if (wall == 9) {
 				//outerbounds
 				ctx.fillStyle = "#000000";
